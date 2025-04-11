@@ -1,11 +1,12 @@
-# Import all schemas to make them available from the package
+# schemas/__init__.py
+from .base import ProductSimpleBase, ShopSimpleBase
 from .shop import (
-    Shop, ShopCreate, ShopUpdate, ShopWithProducts, 
+    ShopBase, ShopCreate, ShopUpdate, Shop, ShopWithProducts,
     ShopMetadata, ShopMetadataCreate, ShopMetadataUpdate,
     ShopWithMetadata, NearbyShopParams
 )
 from .product import (
-    Product, ProductCreate, ProductUpdate, ProductSimple,
+    ProductBase, ProductCreate, ProductUpdate, Product, ProductSimple,
     ProductMetadata, ProductMetadataCreate, ProductMetadataUpdate,
     ProductWithMetadata, ProductWithShop
 )

@@ -1,6 +1,8 @@
+# schemas/product.py
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from schemas.base import ShopSimpleBase, ProductSimpleBase
 
 
 class ProductBase(BaseModel):
@@ -49,14 +51,9 @@ class ProductInDBBase(ProductBase):
         orm_mode = True
 
 
-class ProductSimple(BaseModel):
-    id: int
-    title: str
-    price: float
-    image_url: Optional[str] = None
-    
-    class Config:
-        orm_mode = True
+# This inherits from ProductSimpleBase but adds all fields
+class ProductSimple(ProductSimpleBase):
+    pass
 
 
 class Product(ProductInDBBase):
@@ -64,8 +61,8 @@ class Product(ProductInDBBase):
 
 
 class ProductWithShop(Product):
-    shop_name: str
-    shop_city: str
+    # Use the base class from base.py
+    shop: ShopSimpleBase
 
 
 class ProductMetadataCreate(BaseModel):
@@ -90,9 +87,4 @@ class ProductMetadata(BaseModel):
 
 
 class ProductWithMetadata(Product):
-    metadata: Dict[str, str] = {}
-
-
-from schemas.shop import ShopWithProducts
-# Avoid circular import
-ShopWithProducts.update_forward_refs()
+    product_metadata: Dict[str, str] = {}

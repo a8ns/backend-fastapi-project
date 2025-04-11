@@ -20,7 +20,7 @@ class Shop(BaseModel):
     # GPS coordinates
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)
+    # location = Column(Geography(geometry_type='POINT', srid=4326), nullable=True)
     
     # Metadata
     phone = Column(String, nullable=True)
@@ -46,3 +46,5 @@ class ShopMetadata(BaseModel):
     shop_id = Column(Integer, ForeignKey("shops.id"), nullable=False)
     key = Column(String, nullable=False)
     value = Column(String, nullable=False)
+
+    shop = relationship("Shop", back_populates="shop_metadata")

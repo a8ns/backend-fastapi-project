@@ -40,9 +40,3 @@ async def get_db():
         yield session
     finally:
         await session.close()
-
-
-# Initialize the test database if in testing mode
-if settings.testing:
-    import asyncio
-    asyncio.run(init_test_db())

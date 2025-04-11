@@ -35,7 +35,7 @@ class Product(BaseModel):
     
     # Relationships
     shop = relationship("Shop", back_populates="products")
-    metadata = relationship("ProductMetadata", back_populates="product")
+    product_metadata = relationship("ProductMetadata", back_populates="product")
 
 
 class ProductMetadata(BaseModel):
@@ -47,4 +47,4 @@ class ProductMetadata(BaseModel):
     value = Column(String, nullable=False)
     
     # Relationships
-    product = relationship("Product", back_populates="metadata")
+    product = relationship("Product", back_populates="product_metadata")

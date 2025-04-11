@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, validator
+# schemas/shop.py
+from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-
+from schemas.base import ProductSimpleBase
 
 class ShopBase(BaseModel):
     name: str
@@ -60,7 +61,6 @@ class ShopInDBBase(ShopBase):
 
     class Config:
         orm_mode = True
-        arbitrary_types_allowed = True
 
 
 class Shop(ShopInDBBase):
@@ -68,7 +68,8 @@ class Shop(ShopInDBBase):
 
 
 class ShopWithProducts(Shop):
-    products: List["ProductSimple"] = []
+    # Use the base class to avoid circular imports
+    products: List[ProductSimpleBase] = []
 
 
 class ShopMetadataCreate(BaseModel):
