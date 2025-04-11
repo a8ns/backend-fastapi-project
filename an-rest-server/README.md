@@ -2,47 +2,48 @@
 
 A FastAPI-based API for managing shops and products with geographical features. This API allows you to:
 
-- Create and manage shops with location data
-- Add products associated with shops
-- Find nearby shops using geographic queries
-- Use LLM integration for generating product descriptions and names
+- Create and manage shops with location data  
+- Add products associated with shops  
+- Find nearby shops using geographic queries  
+- Use LLM integration for generating product descriptions and names  
 
 ## Features
 
-- **Shop Management**: CRUD operations for shops with location data
-- **Product Management**: CRUD operations for products
-- **Spatial Queries**: Find shops within a radius of a point
-- **Metadata Support**: Add custom metadata to both shops and products
-- **LLM Integration**: Generate product descriptions and names using OpenAI
+- **Shop Management**: CRUD operations for shops with location data  
+- **Product Management**: CRUD operations for products  
+- **Spatial Queries**: Find shops within a radius of a point  
+- **Metadata Support**: Add custom metadata to both shops and products  
+- **LLM Integration**: Generate product descriptions and names using OpenAI  
 
 ## Tech Stack
 
-- **FastAPI**: Modern, fast web framework for building APIs
-- **SQLAlchemy**: SQL toolkit and ORM
-- **GeoAlchemy2**: Geospatial extension for SQLAlchemy
-- **PostgreSQL**: Database with PostGIS extensions
-- **OpenAI**: Integration for LLM features
-- **Docker**: Containerization for easy deployment
+- **FastAPI**: Modern, fast web framework for building APIs  
+- **SQLAlchemy**: SQL toolkit and ORM  
+- **GeoAlchemy2**: Geospatial extension for SQLAlchemy  
+- **PostgreSQL**: Database with PostGIS extensions  
+- **OpenAI**: Integration for LLM features  
+- **Docker**: Containerization for easy deployment  
+- **Poetry**: Dependency and environment management  
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.9+
-- PostgreSQL with PostGIS extension
-- Docker and Docker Compose (optional, for containerized setup)
+- Python 3.9+  
+- PostgreSQL with PostGIS extension  
+- Docker and Docker Compose (optional, for containerized setup)  
+- Poetry (for Python dependency management)  
 
 ### Environment Setup
 
-1. Clone the repository
-2. Create a virtual environment and activate it:
+1. Clone the repository  
+2. Create a virtual environment with Poetry and install dependencies:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   poetry install
    ```
-3. Install dependencies:
+3. Activate the environment:
    ```bash
-   pip install -r requirements.txt
+   poetry shell
    ```
 4. Copy `.env.example` to `.env` and fill in your configuration values
 
@@ -60,33 +61,47 @@ docker-compose up -d
 uvicorn main:app --reload
 ```
 
-The API will be available at http://localhost:8000. OpenAPI documentation is available at http://localhost:8000/docs.
+The API will be available at [http://localhost:8000](http://localhost:8000)
+
+---
+
+## 📘 API Documentation
+
+Interactive API docs are automatically generated using FastAPI:
+
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)  
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)  
+- **OpenAPI schema**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)  
+
+Use these to explore, test, and debug the API with ease.
+
+---
 
 ## API Endpoints
 
 ### Shops
 
-- `GET /api/v1/shops/` - List all shops
-- `POST /api/v1/shops/` - Create a new shop
-- `GET /api/v1/shops/{shop_id}` - Get shop details with its products
-- `PUT /api/v1/shops/{shop_id}` - Update a shop
-- `DELETE /api/v1/shops/{shop_id}` - Delete a shop (soft delete)
-- `GET /api/v1/shops/nearby` - Find shops within radius of a point
+- `GET /api/v1/shops/` - List all shops  
+- `POST /api/v1/shops/` - Create a new shop  
+- `GET /api/v1/shops/{shop_id}` - Get shop details with its products  
+- `PUT /api/v1/shops/{shop_id}` - Update a shop  
+- `DELETE /api/v1/shops/{shop_id}` - Delete a shop (soft delete)  
+- `GET /api/v1/shops/nearby` - Find shops within radius of a point  
 
 ### Products
 
-- `GET /api/v1/products/` - List all products
-- `POST /api/v1/products/` - Create a new product
-- `GET /api/v1/products/{product_id}` - Get product details
-- `PUT /api/v1/products/{product_id}` - Update a product
-- `DELETE /api/v1/products/{product_id}` - Delete a product (soft delete)
-- `GET /api/v1/products/with-shop` - Get products with shop information
+- `GET /api/v1/products/` - List all products  
+- `POST /api/v1/products/` - Create a new product  
+- `GET /api/v1/products/{product_id}` - Get product details  
+- `PUT /api/v1/products/{product_id}` - Update a product  
+- `DELETE /api/v1/products/{product_id}` - Delete a product (soft delete)  
+- `GET /api/v1/products/with-shop` - Get products with shop information  
 
 ### LLM Integration
 
-- `POST /api/v1/llm/generate` - Generate text using a custom prompt
-- `POST /api/v1/llm/product-description` - Generate a product description
-- `POST /api/v1/llm/product-name` - Generate product name suggestions
+- `POST /api/v1/llm/generate` - Generate text using a custom prompt  
+- `POST /api/v1/llm/product-description` - Generate a product description  
+- `POST /api/v1/llm/product-name` - Generate product name suggestions  
 
 ## Development
 
@@ -104,10 +119,11 @@ This project uses SQLAlchemy's declarative models. When making changes to models
 
 To add new functionality:
 
-1. Create route handlers in appropriate files in the `api/routes/` directory
-2. Update imports and route includes in `api/routers.py` if needed
+1. Create route handlers in appropriate files in the `api/routes/` directory  
+2. Update imports and route includes in `api/routers.py` if needed  
 
-# Project Structure
+## Project Structure
+
 ```
 project_root/
 ├── api/
@@ -142,7 +158,6 @@ project_root/
 │   └── openai_service.py
 ├── main.py
 ├── .env
-├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
+├── pyproject.toml
+└── Dockerfile 
 ```
