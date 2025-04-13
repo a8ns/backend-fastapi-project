@@ -24,18 +24,22 @@ A FastAPI-based API for managing shops, products, inventory, and product variant
 
 ### Prerequisites
 
-- Python 3.9+
-- PostgreSQL
+- Python 3.13+
+- PostgreSQL (test database in container)
 - Docker and Docker Compose (optional, for containerized setup)
 
-### Environment Setup
+### Environment Setup (for development without containers)
 
 1. Clone the repository
 2. Set up a virtual environment and install dependencies:
    ```bash
-   pip install -r requirements.txt
+   poetry install --no-root
    ```
-3. Copy `.env.example` to `.env` and fill in your configuration values
+3. Activate environment
+   ```bash
+   poetry shell
+   ```
+4. Copy `.env.example` to `.env` and fill in your configuration values
 
 ### Running the API
 
