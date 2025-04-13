@@ -1,12 +1,10 @@
-# schemas/product.py
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from schemas.base import ShopSimpleBase, ProductSimpleBase
-
+from uuid import UUID
 
 class ProductBase(BaseModel):
-    shop_id: int
+    shop_id: UUID
     title: str
     description: Optional[str] = None
     price: float
@@ -14,18 +12,15 @@ class ProductBase(BaseModel):
     article_number: Optional[str] = None
     barcode: Optional[str] = None
     image_url: Optional[str] = None
-    additional_images: Optional[List[str]] = None
-    in_stock: bool = True
-    stock_quantity: Optional[int] = None
-    category: Optional[str] = None
+    additional_images: Optional[Dict[str, Any] | List[Any]] = None
+    category_id: Optional[int] = None
     tags: Optional[str] = None
 
-
-class ProductCreate(ProductBase):
+class ProductCreateSchema(ProductBase):
     pass
 
-
-class ProductUpdate(BaseModel):
+class ProductUpdateSchema(BaseModel):
+    shop_id: Optional[UUID] = None
     title: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
@@ -33,58 +28,9 @@ class ProductUpdate(BaseModel):
     article_number: Optional[str] = None
     barcode: Optional[str] = None
     image_url: Optional[str] = None
-    additional_images: Optional[List[str]] = None
-    in_stock: Optional[bool] = None
-    stock_quantity: Optional[int] = None
-    category: Optional[str] = None
+    additional_images: Optional[Dict[str, Any] | List[Any]] = None
+    category_id: Optional[int] = None
     tags: Optional[str] = None
-    is_active: Optional[bool] = None
 
-
-class ProductInDBBase(ProductBase):
-    id: int
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
-# This inherits from ProductSimpleBase but adds all fields
-class ProductSimple(ProductSimpleBase):
+class ProductSchema(ProductBase):
     pass
-
-
-class Product(ProductInDBBase):
-    pass
-
-
-class ProductWithShop(Product):
-    # Use the base class from base.py
-    shop: ShopSimpleBase
-
-
-class ProductMetadataCreate(BaseModel):
-    key: str
-    value: str
-
-
-class ProductMetadataUpdate(BaseModel):
-    value: str
-
-
-class ProductMetadata(BaseModel):
-    id: int
-    product_id: int
-    key: str
-    value: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
-class ProductWithMetadata(Product):
-    product_metadata: Dict[str, str] = {}
