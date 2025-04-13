@@ -1,163 +1,126 @@
-# Shop and Product API with Map Integration
+# E-commerce API with Shop and Product Management
 
-A FastAPI-based API for managing shops and products with geographical features. This API allows you to:
-
-- Create and manage shops with location data  
-- Add products associated with shops  
-- Find nearby shops using geographic queries  
-- Use LLM integration for generating product descriptions and names  
+A FastAPI-based API for managing shops, products, inventory, and product variants. This API provides a complete solution for e-commerce applications with geographic features.
 
 ## Features
 
-- **Shop Management**: CRUD operations for shops with location data  
-- **Product Management**: CRUD operations for products  
-- **Spatial Queries**: Find shops within a radius of a point  
-- **Metadata Support**: Add custom metadata to both shops and products  
-- **LLM Integration**: Generate product descriptions and names using OpenAI  
+- **Shop Management**: CRUD operations for shops with location data
+- **Product Management**: CRUD operations for products with categorization
+- **Inventory Management**: Track product variants with color and size options
+- **Category System**: Organize products with categories
+- **Spatial Queries**: Find shops within a radius of a point (yet to be done)
+- **Type-Safe Development**: Using SQLAlchemy 2.0 with type annotations
 
 ## Tech Stack
 
-- **FastAPI**: Modern, fast web framework for building APIs  
-- **SQLAlchemy**: SQL toolkit and ORM  
-- **GeoAlchemy2**: Geospatial extension for SQLAlchemy  
-- **PostgreSQL**: Database with PostGIS extensions  
-- **OpenAI**: Integration for LLM features  
-- **Docker**: Containerization for easy deployment  
-- **Poetry**: Dependency and environment management  
+- **FastAPI**: Modern, fast web framework for building APIs
+- **SQLAlchemy 2.0**: SQL toolkit and ORM with enhanced type safety
+- **PostgreSQL**: Database with JSONB and UUID support
+- **Pydantic**: Data validation and settings management
+- **Asyncio**: Asynchronous I/O for high performance
+- **Docker**: Containerization for easy deployment
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.9+  
-- PostgreSQL with PostGIS extension  
-- Docker and Docker Compose (optional, for containerized setup)  
-- Poetry (for Python dependency management)  
+- Python 3.9+
+- PostgreSQL
+- Docker and Docker Compose (optional, for containerized setup)
 
 ### Environment Setup
 
-1. Clone the repository  
-2. Create a virtual environment with Poetry and install dependencies:
+1. Clone the repository
+2. Set up a virtual environment and install dependencies:
    ```bash
-   poetry install
+   pip install -r requirements.txt
    ```
-3. Activate the environment:
-   ```bash
-   poetry shell
-   ```
-4. Copy `.env.example` to `.env` and fill in your configuration values
+3. Copy `.env.example` to `.env` and fill in your configuration values
 
 ### Running the API
 
-#### With Docker
-
-```bash
-docker-compose up -d
-```
-
-#### Without Docker
-
-```bash
-uvicorn main:app --reload
-```
-
 The API will be available at [http://localhost:8000](http://localhost:8000)
 
----
-
-## 📘 API Documentation
+## API Documentation
 
 Interactive API docs are automatically generated using FastAPI:
 
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)  
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)  
-- **OpenAPI schema**: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)  
-
-Use these to explore, test, and debug the API with ease.
-
----
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ## API Endpoints
 
 ### Shops
 
-- `GET /api/v1/shops/` - List all shops  
-- `POST /api/v1/shops/` - Create a new shop  
-- `GET /api/v1/shops/{shop_id}` - Get shop details with its products  
-- `PUT /api/v1/shops/{shop_id}` - Update a shop  
-- `DELETE /api/v1/shops/{shop_id}` - Delete a shop (soft delete)  
-- `GET /api/v1/shops/nearby` - Find shops within radius of a point  
+- `GET /api/shops/` - List all shops
+- `POST /api/shops/` - Create a new shop
+- `GET /api/shops/{shop_id}` - Get shop details
+- `PUT /api/shops/{shop_id}` - Update a shop
+- `DELETE /api/shops/{shop_id}` - Delete a shop
 
 ### Products
 
-- `GET /api/v1/products/` - List all products  
-- `POST /api/v1/products/` - Create a new product  
-- `GET /api/v1/products/{product_id}` - Get product details  
-- `PUT /api/v1/products/{product_id}` - Update a product  
-- `DELETE /api/v1/products/{product_id}` - Delete a product (soft delete)  
-- `GET /api/v1/products/with-shop` - Get products with shop information  
+- `GET /api/products/` - List all products
+- `POST /api/products/` - Create a new product
+- `GET /api/products/{product_id}` - Get product details
+- `PUT /api/products/{product_id}` - Update a product
+- `DELETE /api/products/{product_id}` - Delete a product
 
-### LLM Integration
+### Inventory
 
-- `POST /api/v1/llm/generate` - Generate text using a custom prompt  
-- `POST /api/v1/llm/product-description` - Generate a product description  
-- `POST /api/v1/llm/product-name` - Generate product name suggestions  
+- `GET /api/inventory/` - List all inventory items
+- `POST /api/inventory/` - Create a new inventory item
+- `GET /api/inventory/{inventory_id}` - Get inventory details
+- `PUT /api/inventory/{inventory_id}` - Update an inventory item
+- `DELETE /api/inventory/{inventory_id}` - Delete an inventory item
+
+### Categories
+
+- `GET /api/categories/` - List all categories
+- `POST /api/categories/` - Create a new category
+- `GET /api/categories/{category_id}` - Get category details
+- `PUT /api/categories/{category_id}` - Update a category
+- `DELETE /api/categories/{category_id}` - Delete a category
+
+### Colors
+
+- `GET /api/colors/` - List all colors
+- `POST /api/colors/` - Create a new color
+- `GET /api/colors/{color_id}` - Get color details
+- `PUT /api/colors/{color_id}` - Update a color
+- `DELETE /api/colors/{color_id}` - Delete a color
+
+### Sizes
+
+- `GET /api/sizes/` - List all sizes
+- `POST /api/sizes/` - Create a new size
+- `GET /api/sizes/{size_id}` - Get size details
+- `PUT /api/sizes/{size_id}` - Update a size
+- `DELETE /api/sizes/{size_id}` - Delete a size
+
+
+## Database Models
+
+The API uses SQLAlchemy 2.0 with the following models:
+
+- **Shop**: Stores shop information including location data
+- **Product**: Stores product information linked to shops
+- **Category**: Provides categorization for products
+- **Inventory**: Manages product variants with different colors and sizes
+- **Color**: Contains color options for product variants
+- **Size**: Contains size options for product variants
 
 ## Development
 
+### Adding New Features
+
+To extend the API:
+
+1. Define new models in the models directory
+2. Create corresponding schemas
+3. Implement CRUD operations
+4. Create API routes
+
 ### Database Migrations
 
-This project uses SQLAlchemy's declarative models. When making changes to models:
-
-1. Run database initialization during app startup or manually:
-   ```python
-   from db.db_utils import init_db
-   await init_db()
-   ```
-
-### Adding New Routes
-
-To add new functionality:
-
-1. Create route handlers in appropriate files in the `api/routes/` directory  
-2. Update imports and route includes in `api/routers.py` if needed  
-
-## Project Structure
-
-```
-project_root/
-├── api/
-│   ├── __init__.py
-│   ├── routers.py            # Central router configuration
-│   ├── dependencies.py       # Shared dependencies
-│   └── routes/
-│       ├── __init__.py
-│       ├── shops.py          # Shop endpoints only
-│       ├── products.py       # Product endpoints only
-│       └── llm.py            # LLM endpoints only
-├── core/
-│   ├── __init__.py
-│   └── config.py
-├── db/
-│   ├── __init__.py
-│   ├── base_model.py
-│   ├── db_utils.py
-│   └── session.py
-├── models/
-│   ├── __init__.py
-│   ├── shop.py
-│   └── product.py
-├── schemas/
-│   ├── __init__.py
-│   ├── shop.py
-│   ├── product.py
-│   └── llm.py
-├── services/
-│   ├── __init__.py
-│   ├── claude_service.py
-│   └── openai_service.py
-├── main.py
-├── .env
-├── pyproject.toml
-└── Dockerfile 
-```
+The application automatically creates database tables on startup
