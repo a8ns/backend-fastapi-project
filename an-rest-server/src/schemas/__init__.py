@@ -2,13 +2,16 @@
 from .base import ProductSimpleBase, ShopSimpleBase
 from .shop import (
     ShopBase, ShopCreate, ShopUpdate, Shop, ShopWithProducts,
-    ShopMetadata, ShopMetadataCreate, ShopMetadataUpdate,
-    ShopWithMetadata, NearbyShopParams
+    NearbyShopParams
 )
 from .product import (
     ProductBase, ProductCreate, ProductUpdate, Product, ProductSimple,
-    ProductMetadata, ProductMetadataCreate, ProductMetadataUpdate,
-    ProductWithMetadata, ProductWithShop
+    ProductWithShop, ProductWithInventory
+)
+from .inventory import (
+    Color, ColorCreate, Size, SizeCreate,
+    Category, CategoryCreate, CategoryWithChildren,
+    Inventory, InventoryCreate, InventoryUpdate, InventoryWithDetails
 )
 from .llm import (
     LLMRequest, LLMResponse, 

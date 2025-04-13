@@ -2,20 +2,25 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import joinedload
 
 from db.session import get_db
-from models.product import Product, ProductMetadata
+from models.product import Product
 from models.shop import Shop
+from models.inventory import Inventory, Color, Size, Category
 from schemas.product import (
     Product as ProductSchema,
     ProductCreate,
     ProductUpdate,
     ProductSimple,
-    ProductMetadata as ProductMetadataSchema,
-    ProductMetadataCreate,
-    ProductMetadataUpdate,
-    ProductWithMetadata,
-    ProductWithShop
+    ProductWithShop,
+    ProductWithInventory
+)
+from schemas.inventory import (
+    Inventory as InventorySchema,
+    InventoryCreate,
+    InventoryUpdate,
+    InventoryWithDetails
 )
 
 router = APIRouter()
@@ -35,6 +40,15 @@ async def create_product(
     if not shop:
         raise HTTPException(status_code=404, detail=f"Shop with id {product_in.shop_id} not found")
     
+    # Check if category exists if provided
+    if product_in.category_id:
+        category_query = select(Category).where(Category.id == product_in.category_id)
+        category_result = await db.execute(category_query)
+        category = category_result.scalars().first()
+        
+        if not category:
+            raise HTTPException(status_code=404, detail=f"Category with id {product_in.category_id} not found")
+    
     # Create product object
     product = Product(**product_in.dict())
     db.add(product)
@@ -51,7 +65,7 @@ async def read_products(
     shop_id: Optional[int] = None,
     title: Optional[str] = None,
     brand: Optional[str] = None,
-    category: Optional[str] = None,
+    category_id: Optional[int] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     in_stock: Optional[bool] = None,
@@ -66,8 +80,8 @@ async def read_products(
         query = query.where(Product.title.ilike(f"%{title}%"))
     if brand:
         query = query.where(Product.brand.ilike(f"%{brand}%"))
-    if category:
-        query = query.where(Product.category == category)
+    if category_id:
+        query = query.where(Product.category_id == category_id)
     if min_price is not None:
         query = query.where(Product.price >= min_price)
     if max_price is not None:
@@ -85,40 +99,66 @@ async def read_products_with_shop(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    category: Optional[str] = None,
+    category_id: Optional[int] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None
 ):
     """Get products with shop information"""
-    # First query products
-    product_query = select(Product).where(Product.is_active == True)
+    # Use joinedload for more efficient querying
+    query = select(Product).options(
+        joinedload(Product.shop)
+    ).where(Product.is_active == True)
     
-    if category:
-        product_query = product_query.where(Product.category == category)
+    if category_id:
+        query = query.where(Product.category_id == category_id)
     if min_price is not None:
-        product_query = product_query.where(Product.price >= min_price)
+        query = query.where(Product.price >= min_price)
     if max_price is not None:
-        product_query = product_query.where(Product.price <= max_price)
+        query = query.where(Product.price <= max_price)
     
-    product_query = product_query.offset(skip).limit(limit)
-    product_result = await db.execute(product_query)
-    products = product_result.scalars().all()
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    products = result.scalars().all()
     
-    # Now enrich with shop data
-    result = []
+    # Format the response
+    result_list = []
     for product in products:
-        shop_query = select(Shop).where(Shop.id == product.shop_id)
-        shop_result = await db.execute(shop_query)
-        shop = shop_result.scalars().first()
-        
-        if shop:
-            product_dict = ProductSchema.from_orm(product).dict()
-            product_with_shop = ProductWithShop(**product_dict)
-            product_with_shop.shop_name = shop.name
-            product_with_shop.shop_city = shop.city
-            result.append(product_with_shop)
+        product_dict = ProductSchema.from_orm(product).dict()
+        product_with_shop = ProductWithShop(**product_dict)
+        product_with_shop.shop = {
+            "id": product.shop.id,
+            "name": product.shop.name,
+            "city": product.shop.city
+        }
+        result_list.append(product_with_shop)
     
-    return result
+    return result_list
+
+
+@router.get("/with-inventory", response_model=List[ProductWithInventory])
+async def read_products_with_inventory(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    shop_id: Optional[int] = None,
+    category_id: Optional[int] = None
+):
+    """Get products with inventory information"""
+    query = select(Product).options(
+        joinedload(Product.inventory_items).joinedload(Inventory.color),
+        joinedload(Product.inventory_items).joinedload(Inventory.size)
+    ).where(Product.is_active == True)
+    
+    if shop_id:
+        query = query.where(Product.shop_id == shop_id)
+    if category_id:
+        query = query.where(Product.category_id == category_id)
+    
+    query = query.offset(skip).limit(limit)
+    result = await db.execute(query)
+    products = result.scalars().all()
+    
+    return products
 
 
 @router.get("/{product_id}", response_model=ProductSchema)
@@ -135,6 +175,32 @@ async def read_product(
         raise HTTPException(status_code=404, detail="Product not found")
     
     return product
+
+
+@router.get("/{product_id}/inventory", response_model=List[InventoryWithDetails])
+async def read_product_inventory(
+    product_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all inventory items for a product"""
+    # Verify product exists
+    product_query = select(Product).where(Product.id == product_id)
+    product_result = await db.execute(product_query)
+    product = product_result.scalars().first()
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Get inventory with related color and size info
+    query = select(Inventory).options(
+        joinedload(Inventory.color),
+        joinedload(Inventory.size)
+    ).where(Inventory.product_id == product_id)
+    
+    result = await db.execute(query)
+    inventory_items = result.scalars().all()
+    
+    return inventory_items
 
 
 @router.put("/{product_id}", response_model=ProductSchema)
@@ -184,14 +250,14 @@ async def delete_product(
     return product
 
 
-# Product metadata endpoints
-@router.post("/{product_id}/metadata", response_model=ProductMetadataSchema)
-async def create_product_metadata(
+# Inventory endpoints
+@router.post("/{product_id}/inventory", response_model=InventorySchema)
+async def create_inventory_item(
     product_id: int,
-    metadata: ProductMetadataCreate,
+    inventory_in: InventoryCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    """Add metadata to a product"""
+    """Add inventory item to a product"""
     # Check if product exists
     product_query = select(Product).where(Product.id == product_id)
     product_result = await db.execute(product_query)
@@ -200,100 +266,121 @@ async def create_product_metadata(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    # Check if metadata key already exists
-    existing_query = select(ProductMetadata).where(
-        ProductMetadata.product_id == product_id,
-        ProductMetadata.key == metadata.key
-    )
-    existing_result = await db.execute(existing_query)
-    existing = existing_result.scalars().first()
+    # Check if color exists if provided
+    if inventory_in.color_id:
+        color_query = select(Color).where(Color.id == inventory_in.color_id)
+        color_result = await db.execute(color_query)
+        color = color_result.scalars().first()
+        
+        if not color:
+            raise HTTPException(status_code=404, detail=f"Color with id {inventory_in.color_id} not found")
     
-    if existing:
-        raise HTTPException(status_code=400, detail=f"Metadata key '{metadata.key}' already exists")
+    # Check if size exists if provided
+    if inventory_in.size_id:
+        size_query = select(Size).where(Size.id == inventory_in.size_id)
+        size_result = await db.execute(size_query)
+        size = size_result.scalars().first()
+        
+        if not size:
+            raise HTTPException(status_code=404, detail=f"Size with id {inventory_in.size_id} not found")
     
-    # Create metadata
-    product_metadata = ProductMetadata(product_id=product_id, **metadata.dict())
-    db.add(product_metadata)
+    # Create inventory item
+    inventory = Inventory(product_id=product_id, **inventory_in.dict())
+    db.add(inventory)
     await db.commit()
-    await db.refresh(product_metadata)
-    return product_metadata
+    await db.refresh(inventory)
+    
+    # Update product stock status if necessary
+    if inventory.amount > 0 and not product.in_stock:
+        product.in_stock = True
+        db.add(product)
+        await db.commit()
+    
+    return inventory
 
 
-@router.get("/{product_id}/metadata", response_model=ProductWithMetadata)
-async def get_product_with_metadata(
-    product_id: int,
+@router.put("/inventory/{inventory_id}", response_model=InventorySchema)
+async def update_inventory_item(
+    inventory_id: int,
+    inventory_in: InventoryUpdate,
     db: AsyncSession = Depends(get_db)
 ):
-    """Get product with all metadata as key-value dictionary"""
-    # Get product
+    """Update inventory item"""
+    query = select(Inventory).where(Inventory.inventory_id == inventory_id)
+    result = await db.execute(query)
+    inventory = result.scalars().first()
+    
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    update_data = inventory_in.dict(exclude_unset=True)
+    
+    # Update inventory attributes
+    for field, value in update_data.items():
+        setattr(inventory, field, value)
+    
+    db.add(inventory)
+    await db.commit()
+    await db.refresh(inventory)
+    
+    # Update product stock status if necessary
+    if inventory.amount == 0:
+        # Check if any inventory items still have stock
+        product_id = inventory.product_id
+        stock_query = select(Inventory).where(
+            Inventory.product_id == product_id,
+            Inventory.amount > 0
+        )
+        stock_result = await db.execute(stock_query)
+        has_stock = stock_result.scalars().first() is not None
+        
+        # Update product stock status if needed
+        product_query = select(Product).where(Product.id == product_id)
+        product_result = await db.execute(product_query)
+        product = product_result.scalars().first()
+        
+        if product and product.in_stock != has_stock:
+            product.in_stock = has_stock
+            db.add(product)
+            await db.commit()
+    
+    return inventory
+
+
+@router.delete("/inventory/{inventory_id}", response_model=InventorySchema)
+async def delete_inventory_item(
+    inventory_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete inventory item"""
+    query = select(Inventory).where(Inventory.inventory_id == inventory_id)
+    result = await db.execute(query)
+    inventory = result.scalars().first()
+    
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory item not found")
+    
+    product_id = inventory.product_id
+    
+    # Delete inventory item
+    await db.delete(inventory)
+    await db.commit()
+    
+    # Update product stock status if necessary
+    stock_query = select(Inventory).where(
+        Inventory.product_id == product_id,
+        Inventory.amount > 0
+    )
+    stock_result = await db.execute(stock_query)
+    has_stock = stock_result.scalars().first() is not None
+    
     product_query = select(Product).where(Product.id == product_id)
     product_result = await db.execute(product_query)
     product = product_result.scalars().first()
     
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
+    if product and product.in_stock != has_stock:
+        product.in_stock = has_stock
+        db.add(product)
+        await db.commit()
     
-    # Get all metadata for product
-    metadata_query = select(ProductMetadata).where(ProductMetadata.product_id == product_id)
-    metadata_result = await db.execute(metadata_query)
-    metadata_items = metadata_result.scalars().all()
-    
-    # Convert to dictionary
-    metadata_dict = {item.key: item.value for item in metadata_items}
-    
-    # Combine product and metadata
-    result = ProductWithMetadata.from_orm(product)
-    result.metadata = metadata_dict
-    
-    return result
-
-
-@router.put("/{product_id}/metadata/{key}", response_model=ProductMetadataSchema)
-async def update_product_metadata(
-    product_id: int,
-    key: str,
-    metadata: ProductMetadataUpdate,
-    db: AsyncSession = Depends(get_db)
-):
-    """Update product metadata value"""
-    # Check if metadata exists
-    query = select(ProductMetadata).where(
-        ProductMetadata.product_id == product_id,
-        ProductMetadata.key == key
-    )
-    result = await db.execute(query)
-    product_metadata = result.scalars().first()
-    
-    if not product_metadata:
-        raise HTTPException(status_code=404, detail=f"Metadata key '{key}' not found")
-    
-    # Update value
-    product_metadata.value = metadata.value
-    db.add(product_metadata)
-    await db.commit()
-    await db.refresh(product_metadata)
-    return product_metadata
-
-
-@router.delete("/{product_id}/metadata/{key}", response_model=ProductMetadataSchema)
-async def delete_product_metadata(
-    product_id: int,
-    key: str,
-    db: AsyncSession = Depends(get_db)
-):
-    """Delete product metadata"""
-    # Check if metadata exists
-    query = select(ProductMetadata).where(
-        ProductMetadata.product_id == product_id,
-        ProductMetadata.key == key
-    )
-    result = await db.execute(query)
-    product_metadata = result.scalars().first()
-    
-    if not product_metadata:
-        raise HTTPException(status_code=404, detail=f"Metadata key '{key}' not found")
-    
-    # Delete metadata
-    await db.delete(product_metadata)
-    await db.commit()
-    return product_metadata
+    return inventory

@@ -1,8 +1,8 @@
-# schemas/product.py
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from schemas.base import ShopSimpleBase, ProductSimpleBase
+from schemas.inventory import InventoryWithDetails
 
 
 class ProductBase(BaseModel):
@@ -17,7 +17,7 @@ class ProductBase(BaseModel):
     additional_images: Optional[List[str]] = None
     in_stock: bool = True
     stock_quantity: Optional[int] = None
-    category: Optional[str] = None
+    category_id: Optional[int] = None
     tags: Optional[str] = None
 
 
@@ -36,7 +36,7 @@ class ProductUpdate(BaseModel):
     additional_images: Optional[List[str]] = None
     in_stock: Optional[bool] = None
     stock_quantity: Optional[int] = None
-    category: Optional[str] = None
+    category_id: Optional[int] = None
     tags: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -65,26 +65,8 @@ class ProductWithShop(Product):
     shop: ShopSimpleBase
 
 
-class ProductMetadataCreate(BaseModel):
-    key: str
-    value: str
-
-
-class ProductMetadataUpdate(BaseModel):
-    value: str
-
-
-class ProductMetadata(BaseModel):
-    id: int
-    product_id: int
-    key: str
-    value: str
-    created_at: datetime
-    updated_at: datetime
+class ProductWithInventory(Product):
+    inventory_items: List[InventoryWithDetails] = []
 
     class Config:
         orm_mode = True
-
-
-class ProductWithMetadata(Product):
-    product_metadata: Dict[str, str] = {}

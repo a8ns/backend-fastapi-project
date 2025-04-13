@@ -1,11 +1,15 @@
 from sqlalchemy import Column, Integer, String, Float, Text, Boolean, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from db.base_model import BaseModel
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from uuid import UUID as UUIDType
+
 
 class Product(BaseModel):
     __tablename__ = "products"
-
-    id = Column(Integer, primary_key=True, index=True)
+    id: Mapped[UUIDType] = mapped_column(UUID(as_uuid=True),primary_key=True, unique=True, nullable=False)
     shop_id = Column(Integer, ForeignKey("shops.id"), nullable=False)
     
     # Basic product information
@@ -27,7 +31,7 @@ class Product(BaseModel):
     stock_quantity = Column(Integer, nullable=True)
     
     # Categorization
-    category = Column(String, index=True, nullable=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     tags = Column(String, nullable=True)  # Comma-separated tags
     
     # Status
@@ -35,16 +39,5 @@ class Product(BaseModel):
     
     # Relationships
     shop = relationship("Shop", back_populates="products")
-    product_metadata = relationship("ProductMetadata", back_populates="product")
-
-
-class ProductMetadata(BaseModel):
-    __tablename__ = "product_metadata"
-
-    id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    key = Column(String, nullable=False)
-    value = Column(String, nullable=False)
-    
-    # Relationships
-    product = relationship("Product", back_populates="product_metadata")
+    category = relationship("Category", back_populates="products")
+    inventory_items = relationship("Inventory", back_populates="product")

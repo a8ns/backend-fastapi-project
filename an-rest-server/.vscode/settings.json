@@ -1,0 +1,16 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.languageServer": "Jedi",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ],
+    "python.condaPath": "",
+    "python.terminal.activateEnvironment": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.variableTypes": true,
+    "editor.hover.enabled": true,
+    "editor.parameterHints.enabled": true,
+    "editor.formatOnSave": true,
+}

@@ -1,8 +1,8 @@
-# schemas/shop.py
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from schemas.base import ProductSimpleBase
+
 
 class ShopBase(BaseModel):
     name: str
@@ -58,7 +58,7 @@ class ShopInDBBase(ShopBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-
+    
     class Config:
         orm_mode = True
 
@@ -70,31 +70,6 @@ class Shop(ShopInDBBase):
 class ShopWithProducts(Shop):
     # Use the base class to avoid circular imports
     products: List[ProductSimpleBase] = []
-
-
-class ShopMetadataCreate(BaseModel):
-    key: str
-    value: str
-
-
-class ShopMetadataUpdate(BaseModel):
-    value: str
-
-
-class ShopMetadata(BaseModel):
-    id: int
-    shop_id: int
-    key: str
-    value: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        orm_mode = True
-
-
-class ShopWithMetadata(Shop):
-    metadata: Dict[str, str] = {}
 
 
 class NearbyShopParams(BaseModel):
