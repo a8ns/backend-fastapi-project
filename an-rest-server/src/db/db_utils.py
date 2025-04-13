@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 
 from models import *  # Import all models from models package
 from .session import engine
-from db.base_model import Base  # Importing Base from db/base_model.py
+from models.base_model import Base  # Importing Base from db/base_model.py
 
 
 async def init_db():

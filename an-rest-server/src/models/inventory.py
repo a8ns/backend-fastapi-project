@@ -1,47 +1,37 @@
-from sqlalchemy import Column, Integer, String, Float, Text, Boolean, ForeignKey
-from sqlalchemy.orm import relationship, backref
-from db.base_model import BaseModel
+from sqlalchemy import Integer, String, Float, Text, Boolean, ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID
+from typing import List
+from uuid import UUID as UUIDType
+from .base_model import BaseModel
 
 class Color(BaseModel):
     __tablename__ = "colors"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    code = Column(String, nullable=True)  # Hex code or other color identifier
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    code: Mapped[str] = mapped_column(String(255), nullable=True)  # Hex code or other color identifier
     
     # Relationships
-    inventory_items = relationship("Inventory", back_populates="color")
+    inventory_items: Mapped[List["Inventory"]] = relationship("Inventory", back_populates="color")
 
 class Size(BaseModel):
     __tablename__ = "sizes"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     
     # Relationships
-    inventory_items = relationship("Inventory", back_populates="size")
-
-class Category(BaseModel):
-    __tablename__ = "categories"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    
-    # Relationships
-    products = relationship("Product", back_populates="category")
-    # subcategories = relationship("Category", 
-    #                             backref=backref("parent", remote_side=[id]),
-    #                             cascade="all, delete-orphan")
+    inventory_items: Mapped[List["Inventory"]] = relationship("Inventory", back_populates="size")
 
 class Inventory(BaseModel):
     __tablename__ = "inventory"
-    inventory_id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    color_id = Column(Integer, ForeignKey("colors.id"), nullable=True)
-    size_id = Column(Integer, ForeignKey("sizes.id"), nullable=True)
-    amount = Column(Integer, nullable=False, default=0)
-    short_description = Column(String, nullable=True)
-    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    product_id: Mapped[UUIDType] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)    
+    color_id: Mapped[int] = mapped_column(Integer, ForeignKey("colors.id"), nullable=True)
+    size_id: Mapped[int] = mapped_column(Integer, ForeignKey("sizes.id"), nullable=True)
+    amount: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    description: Mapped[str] = mapped_column(String(1024), nullable=True)
+
     # Relationships
-    product = relationship("Product", back_populates="inventory_items")
-    color = relationship("Color", back_populates="inventory_items")
-    size = relationship("Size", back_populates="inventory_items")
+    product: Mapped["Product"] = relationship("Product", back_populates="inventory_items")
+    color: Mapped["Color"] = relationship("Color", back_populates="inventory_items")
+    size: Mapped["Size"] = relationship("Size", back_populates="inventory_items")

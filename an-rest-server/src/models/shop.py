@@ -3,8 +3,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.dialects.postgresql import UUID, JSONB
+from typing import List
 # from geoalchemy2 import Geography
-from db.base_model import BaseModel
+from .base_model import BaseModel
 from uuid import UUID as UUIDType
 
 class Shop(BaseModel):
@@ -32,11 +33,11 @@ class Shop(BaseModel):
     opening_hours: Mapped[str] = mapped_column(String(255), nullable=False)
     
     # Status
-    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
     # Optional category/tags for filtering
     category: Mapped[str] = mapped_column(String(255), nullable=True)
     tags: Mapped[str] = mapped_column(String(255), nullable=True)  # Comma-separated tags
     
     # Relationships
-    products = relationship("Product", back_populates="shop")
+    product: Mapped[List["Product"]] = relationship("Product", back_populates="shop")
