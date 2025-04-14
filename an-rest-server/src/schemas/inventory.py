@@ -4,7 +4,6 @@ from datetime import datetime
 from uuid import UUID
 
 class InventoryBase(BaseModel):
-    product_id: UUID
     color_id: Optional[int] = None
     size_id: Optional[int] = None
     amount: int = 0
@@ -21,4 +20,10 @@ class InventoryUpdateSchema(BaseModel):
     description: Optional[str] = None
 
 class InventorySchema(InventoryBase):
-    pass
+    id: UUID  # Add the id field here
+    is_active: bool  # Added this field as it's in your model
+    created_at: Optional[datetime] = None  # Add timestamp fields if they exist in your model
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True  # This enables ORM mode for Pydantic v2
