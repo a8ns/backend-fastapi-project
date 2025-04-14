@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Text, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Float, Text, Boolean, ForeignKey, JSON, text
 from typing import cast, Optional, List
 from sqlalchemy.orm import relationship
 from .base_model import BaseModel
@@ -9,7 +9,7 @@ from uuid import UUID as UUIDType
 
 class Category(BaseModel):
     __tablename__ = "categories"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String(1024), nullable=True)    
     # Relationships
@@ -17,7 +17,13 @@ class Category(BaseModel):
 
 class Product(BaseModel):
     __tablename__ = "products"
-    id: Mapped[UUIDType] = mapped_column(UUID(as_uuid=True),primary_key=True, unique=True, nullable=False)
+    id: Mapped[UUIDType] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        unique=True,
+        nullable=False,
+        server_default=text("gen_random_uuid()"),  # PostgreSQL will generate the UUID
+    )
     shop_id: Mapped[UUIDType] = mapped_column(UUID(as_uuid=True), ForeignKey("shops.id"), nullable=False)
     
     # Basic product information
@@ -41,4 +47,4 @@ class Product(BaseModel):
     # Relationships
     shop: Mapped["Shop"] = relationship("Shop", back_populates="products")
     category: Mapped["Category"] = relationship("Category", back_populates="products")
-    inventory_items: Mapped["Inventory"] = relationship("Inventory", back_populates="product")
+    inventory_items: Mapped[List["Inventory"]] = relationship("Inventory", back_populates="product")
