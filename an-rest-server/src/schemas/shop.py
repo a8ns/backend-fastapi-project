@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 class ShopBase(BaseModel):
     name: str
@@ -23,6 +24,7 @@ class ShopCreateSchema(ShopBase):
     pass
 
 class ShopUpdateSchema(BaseModel):
+    id: UUID
     name: Optional[str] = None
     description: Optional[str] = None
     address: Optional[str] = None
@@ -40,4 +42,10 @@ class ShopUpdateSchema(BaseModel):
     tags: Optional[str] = None
 
 class ShopSchema(ShopBase):
-    pass
+    id: UUID
+    is_active: bool
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True  # This enables ORM mode for Pydantic v2

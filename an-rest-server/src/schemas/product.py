@@ -4,7 +4,6 @@ from datetime import datetime
 from uuid import UUID
 
 class ProductBase(BaseModel):
-    shop_id: UUID
     title: str
     description: Optional[str] = None
     price: float
@@ -20,7 +19,7 @@ class ProductCreateSchema(ProductBase):
     pass
 
 class ProductUpdateSchema(BaseModel):
-    shop_id: Optional[UUID] = None
+    id: UUID
     title: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
@@ -33,4 +32,10 @@ class ProductUpdateSchema(BaseModel):
     tags: Optional[str] = None
 
 class ProductSchema(ProductBase):
-    pass
+    id: UUID
+    is_active: bool
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
