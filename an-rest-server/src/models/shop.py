@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Float, Text, Boolean, ForeignKey
+from sqlalchemy import Integer, String, Float, Text, Boolean, ForeignKey, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -10,7 +10,13 @@ from uuid import UUID as UUIDType
 
 class Shop(BaseModel):
     __tablename__ = "shops"
-    id: Mapped[UUIDType] = mapped_column(UUID(as_uuid=True),primary_key=True, unique=True, nullable=False)
+    id: Mapped[UUIDType] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        unique=True,
+        nullable=False,
+        server_default=text("gen_random_uuid()"),  # PostgreSQL will generate the UUID
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String(2048), nullable=True)
     
@@ -40,4 +46,4 @@ class Shop(BaseModel):
     tags: Mapped[str] = mapped_column(String(255), nullable=True)  # Comma-separated tags
     
     # Relationships
-    product: Mapped[List["Product"]] = relationship("Product", back_populates="shop")
+    products: Mapped[List["Product"]] = relationship("Product", back_populates="shop")

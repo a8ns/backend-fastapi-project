@@ -7,7 +7,12 @@ from .base_model import BaseModel
 
 class Color(BaseModel):
     __tablename__ = "colors"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer, 
+        primary_key=True, 
+        index=True,
+        autoincrement=True  # This enables auto-incrementing
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     code: Mapped[str] = mapped_column(String(255), nullable=True)  # Hex code or other color identifier
     
@@ -16,7 +21,12 @@ class Color(BaseModel):
 
 class Size(BaseModel):
     __tablename__ = "sizes"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer, 
+        primary_key=True, 
+        index=True,
+        autoincrement=True
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     
     # Relationships
@@ -24,7 +34,12 @@ class Size(BaseModel):
 
 class Inventory(BaseModel):
     __tablename__ = "inventory"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        Integer, 
+        primary_key=True, 
+        index=True,
+        autoincrement=True
+    )
     product_id: Mapped[UUIDType] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), nullable=False)    
     color_id: Mapped[int] = mapped_column(Integer, ForeignKey("colors.id"), nullable=True)
     size_id: Mapped[int] = mapped_column(Integer, ForeignKey("sizes.id"), nullable=True)

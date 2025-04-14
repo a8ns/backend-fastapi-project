@@ -25,7 +25,7 @@ class Settings:
     postgres_test_port: str = os.environ.get("POSTGRES_TEST_PORT", "5432")
     postgres_test_user: str = os.environ.get("POSTGRES_TEST_USER", "postgres")
     postgres_test_password: str = os.environ.get("POSTGRES_TEST_PASSWORD", "postgres")
-    postgres_test_db: str = os.environ.get("POSTGRES_TEST_DB", "user_data")
+    postgres_test_db: str = os.environ.get("POSTGRES_TEST_DB", "shop_product_db_test")
     
     # Connection string - initialize it properly as an attribute
     database_url = os.environ.get("DATABASE_URL")
