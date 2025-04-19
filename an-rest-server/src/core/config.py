@@ -9,7 +9,7 @@ class Settings:
     # API settings
     project_name: str = os.environ.get("PROJECT_NAME", "Shop & Product API")
     api_v1_str: str = os.environ.get("API_V1_STR", "/api/v1")
-    rest_server_api_key: str = os.environ.get("X-API-KEY") 
+    rest_server_api_key: str = os.environ.get("X_API_KEY") 
     # Testing toggle
     testing: bool = os.environ.get("TESTING", "false").lower() == "true"
     

@@ -19,7 +19,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             return response
 
-        api_key = request.headers.get("X-API-KEY")
+        api_key = request.headers.get("X_API_KEY")
         if not api_key or api_key != settings.rest_server_api_key:
             raise HTTPException(status_code=401, detail="Could not validate API Key")
         response = await call_next(request)

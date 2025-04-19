@@ -13,7 +13,7 @@ from fastapi.security import APIKeyHeader
 
 
 # Define API key security scheme for Swagger UI
-api_key_header = APIKeyHeader(name="X-API-KEY", auto_error=False)
+api_key_header = APIKeyHeader(name="X_API_KEY", auto_error=False)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
