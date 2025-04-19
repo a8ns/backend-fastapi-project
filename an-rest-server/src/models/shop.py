@@ -1,7 +1,5 @@
-from sqlalchemy import Integer, String, Float, Text, Boolean, ForeignKey, text
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy import Column, Integer, String, Float, Text, Boolean, ForeignKey, JSON, text, Index, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from typing import List
 # from geoalchemy2 import Geography

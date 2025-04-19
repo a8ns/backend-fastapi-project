@@ -1,9 +1,8 @@
 from typing import Dict, Any, Optional
-import logging
+from core.logging import logger
 from openai import AsyncOpenAI
 from core.config import settings
 
-logger = logging.getLogger(__name__)
 
 class OpenAIService:
     """Service for interacting with OpenAI APIs"""

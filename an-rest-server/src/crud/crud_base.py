@@ -4,12 +4,10 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.future import select
 from models.base_model import BaseModel
 from uuid import UUID
-import logging
+from core.logging import logger
 from pydantic import BaseModel as PydanticBaseModel
 
-logging.basicConfig(level=logging.INFO,
-                    format='[%(asctime)s] %(levelname)s: %(message)s')
-logger = logging.getLogger(__name__)
+
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=PydanticBaseModel)

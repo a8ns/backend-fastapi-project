@@ -5,3 +5,4 @@ from .category import *
 from .color import *
 from .size import *
 from .llm import *
+from .search import *

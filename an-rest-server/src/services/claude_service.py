@@ -1,10 +1,8 @@
 from typing import Dict, Any, Optional
-import logging
+from core.logging import logger
 import anthropic
 
 from core.config import settings
-
-logger = logging.getLogger(__name__)
 
 class ClaudeService:
     """Service for interacting with Anthropic Claude API"""

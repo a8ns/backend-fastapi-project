@@ -601,6 +601,21 @@ files = [
 ]
 
 [[package]]
+name = "pgvector"
+version = "0.4.0"
+description = "pgvector support for Python"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pgvector-0.4.0-py3-none-any.whl", hash = "sha256:9d3e0c27f676c61d2fd4270ac1bc520d39b947b199200babe4a56d6d00c74a07"},
+    {file = "pgvector-0.4.0.tar.gz", hash = "sha256:f909f8e8081b57fb8a2442c36c3a1e521228d0d4ad66100c28c674806ff62688"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[[package]]
 name = "prometheus-client"
 version = "0.21.1"
 description = "Python client for the Prometheus monitoring system."
@@ -1175,4 +1190,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "5f951788b8b6bd9b82db5edae90b8450ad8af4ae515f981ab6186a4b21b9f8ce"
+content-hash = "ab880ce1f04b92ada6c5f38a9890eaa6d7a6b252c3b4e6c866f0c893e8d1dd52"

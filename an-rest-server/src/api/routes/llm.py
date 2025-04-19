@@ -14,6 +14,8 @@ from schemas.llm import (
     ProductNameGenerationRequest
 )
 
+import json
+
 router = APIRouter()
 
 
@@ -64,7 +66,17 @@ Text to analyze: {user_input}"""
             temperature=temperature,
             max_tokens=max_tokens
         )
+        # Try to parse the JSON but keep the original LLMResponse structure
+        try:
+            parsed_json = json.loads(result["text"])
+            # Replace the text field with the parsed JSON
+            result["parsed_data"] = parsed_json
+        except json.JSONDecodeError:
+            # If parsing fails, add an error flag but don't break the response
+            result["parsing_error"] = True
+            
         return result
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error extracting keywords with OpenAI: {str(e)}")
 

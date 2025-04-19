@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .routes import shop, product, inventory, category, color, size, llm
+from .routes import shop, product, inventory, category, color, size, llm, search
 
 # Main API router
 api_router = APIRouter()
@@ -11,6 +11,7 @@ api_router.include_router(inventory.router, prefix="/inventory", tags=["inventor
 api_router.include_router(category.router, prefix="/categories", tags=["categories"])
 api_router.include_router(color.router, prefix="/colors", tags=["colors"])
 api_router.include_router(size.router, prefix="/sizes", tags=["sizes"])
+api_router.include_router(search.router, prefix="/search", tags=["search"])
 
 api_router.include_router(
     llm.router,

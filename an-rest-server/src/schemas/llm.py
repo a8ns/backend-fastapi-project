@@ -14,6 +14,8 @@ class LLMResponse(BaseModel):
     model: str
     tokens: Dict[str, int]
     finish_reason: Optional[str] = None
+    parsed_data: Optional[Dict[str, Any]] = None
+    parsing_error: bool = False
 
 # Simplified product keyword extraction request
 class ProductKeywordExtractionRequest(BaseModel):

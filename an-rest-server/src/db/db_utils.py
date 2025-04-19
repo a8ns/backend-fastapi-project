@@ -1,7 +1,7 @@
 import logging
 import json
 import asyncio
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -39,6 +39,18 @@ async def retry_async(func, max_retries=5, initial_delay=1, backoff_factor=2):
                 logging.error(f"All {max_retries} attempts failed")
                 raise last_exception
 
+async def install_extensions():
+    """Install PostgreSQL extensions."""
+    async with engine.begin() as conn:
+        try:
+            # Install pgvector extension
+            logging.info("Installing pgvector extension if not exists")
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            logging.info("Vector extension successfully installed")
+        except Exception as e:
+            logging.error(f"Error installing extensions: {str(e)}")
+            raise
+
 async def create_tables():
     """Function to create database tables."""
     async with engine.begin() as conn:
@@ -65,7 +77,12 @@ async def create_tables():
 async def init_db():
     """Initialize database with retry mechanism."""
     try:
+        # First install required extensions
+        await retry_async(install_extensions)
+        
+        # Then create tables
         await retry_async(create_tables)
+        
         logging.info("Database initialization successful")
     except Exception as e:
         logging.error(f"Database initialization failed: {str(e)}")
