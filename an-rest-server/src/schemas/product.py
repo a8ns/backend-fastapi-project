@@ -33,7 +33,6 @@ class ProductUpdateSchema(BaseModel):
 
 class ProductSchema(ProductBase):
     id: UUID
-    is_active: bool
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     
