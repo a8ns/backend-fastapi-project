@@ -16,7 +16,7 @@ class ProductBase(BaseModel):
     tags: Optional[str] = None
 
 class ProductCreateSchema(ProductBase):
-    pass
+    shop_id: UUID
 
 class ProductUpdateSchema(BaseModel):
     id: UUID
