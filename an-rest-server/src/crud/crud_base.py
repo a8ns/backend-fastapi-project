@@ -23,13 +23,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     
     async def get(self, db_session: AsyncSession, id: IdType) -> Optional[ModelType]:
         """Get a record by id"""
-        logging.info(f"GET crud get is being called for {self.model.__name__} with id {id}")
+        logger.info(f"GET crud get is being called for {self.model.__name__} with id {id}")
         result = await db_session.execute(select(self.model).filter(self.model.id == id))
         return result.scalars().first()
     
     async def get_by_field(self, db_session: AsyncSession, field: str, value: Any) -> Optional[ModelType]:
         """Get a record by a specific field"""
-        logging.info(f"GET crud get_by_field is being called for {self.model.__name__} with {field}={value}")
+        logger.info(f"GET crud get_by_field is being called for {self.model.__name__} with {field}={value}")
         result = await db_session.execute(
             select(self.model).filter(getattr(self.model, field) == value)
         )
@@ -58,7 +58,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     
     async def create(self, db_session: AsyncSession, *, obj_in: Union[CreateSchemaType, Dict[str, Any]]) -> ModelType:
         """Create a new record"""
-        logging.info(f"POST crud create is being called for {self.model.__name__}")
+        logger.info(f"POST crud create is being called for {self.model.__name__}")
         
         if isinstance(obj_in, dict):
             obj_in_data = obj_in
@@ -72,7 +72,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await db_session.refresh(db_obj)
         except Exception as e:
             await db_session.rollback()
-            logging.error(f"Error creating {self.model.__name__}: {e}")
+            logger.error(f"Error creating {self.model.__name__}: {e}")
             raise
         return db_obj
     
@@ -98,7 +98,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await db_session.refresh(db_obj)
         except Exception as e:
             await db_session.rollback()
-            logging.error(f"Error updating {self.model.__name__} {db_obj.id}: {e}")
+            logger.error(f"Error updating {self.model.__name__} {db_obj.id}: {e}")
             raise
         return db_obj
     
@@ -113,7 +113,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await db_session.commit()
         except Exception as e:
             await db_session.rollback()
-            logging.error(f"Error deleting {self.model.__name__} {id}: {e}")
+            logger.error(f"Error deleting {self.model.__name__} {id}: {e}")
             raise
         return obj
     
@@ -140,7 +140,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 await db_session.refresh(obj)
         except Exception as e:
             await db_session.rollback()
-            logging.error(f"Error bulk creating {self.model.__name__}: {e}")
+            logger.error(f"Error bulk creating {self.model.__name__}: {e}")
             raise
         return db_objs
     
