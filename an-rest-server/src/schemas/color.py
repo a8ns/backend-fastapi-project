@@ -10,8 +10,12 @@ class ColorCreateSchema(ColorBase):
     pass
 
 class ColorUpdateSchema(BaseModel):
+    id: int
     name: Optional[str] = None
     code: Optional[str] = None
 
 class ColorSchema(ColorBase):
-    pass
+    id: int
+    
+    class Config:
+        from_attributes = True

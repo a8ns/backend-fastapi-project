@@ -9,7 +9,11 @@ class SizeCreateSchema(SizeBase):
     pass
 
 class SizeUpdateSchema(BaseModel):
+    id: int
     name: Optional[str] = None
 
 class SizeSchema(SizeBase):
-    pass
+    id: int
+    
+    class Config:
+        from_attributes = True
