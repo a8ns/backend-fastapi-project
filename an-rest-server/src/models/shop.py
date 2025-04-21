@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Text, Boolean, ForeignKey, JSON, text, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from typing import List
+from typing import cast, Optional, List, Dict, Any
 # from geoalchemy2 import Geography
 from .base_model import BaseModel
 from uuid import UUID as UUIDType
@@ -39,7 +39,7 @@ class Shop(BaseModel):
     # Media
     image_url: Mapped[str] = mapped_column(String(512), nullable=True)
     additional_images: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)  
-    
+
     # Status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
