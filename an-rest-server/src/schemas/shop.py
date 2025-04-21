@@ -17,6 +17,8 @@ class ShopBase(BaseModel):
     email: str
     website: Optional[str] = None
     opening_hours: str
+    image_url: Optional[str] = None
+    additional_images: Optional[Dict[str, Any] | List[Any]] = None
     category: Optional[str] = None
     tags: Optional[str] = None
 
@@ -38,6 +40,8 @@ class ShopUpdateSchema(BaseModel):
     email: Optional[str] = None
     website: Optional[str] = None
     opening_hours: Optional[str] = None
+    image_url: Optional[str] = None
+    additional_images: Optional[Dict[str, Any] | List[Any]] = None
     category: Optional[str] = None
     tags: Optional[str] = None
 

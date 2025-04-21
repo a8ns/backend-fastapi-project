@@ -36,6 +36,10 @@ class Shop(BaseModel):
     website: Mapped[str] = mapped_column(String(512), nullable=True)
     opening_hours: Mapped[str] = mapped_column(String(255), nullable=False)
     
+    # Media
+    image_url: Mapped[str] = mapped_column(String(512), nullable=True)
+    additional_images: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)  
+    
     # Status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
