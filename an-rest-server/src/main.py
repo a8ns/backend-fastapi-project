@@ -51,6 +51,7 @@ app.add_middleware(APIKeyMiddleware)
 # Set up CORS middleware
 
 origins = [origin.strip() for origin in settings.cors_origins.split(",")]
+logger.info(f"CORS Origins configured: ")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

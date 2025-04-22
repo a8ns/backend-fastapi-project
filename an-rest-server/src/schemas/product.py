@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from schemas.color import ColorSchema
+from schemas.size import SizeSchema
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from uuid import UUID
@@ -19,7 +21,8 @@ class ProductCreateSchema(ProductBase):
     shop_id: UUID
 
 class ProductUpdateSchema(BaseModel):
-    id: UUID
+    product_id: UUID = Field(alias="id", serialization_alias="product_id")
+    shop_id: Optional[UUID] = None
     title: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
@@ -32,10 +35,26 @@ class ProductUpdateSchema(BaseModel):
     tags: Optional[str] = None
 
 class ProductSchema(ProductBase):
-    id: UUID
+    product_id: UUID = Field(alias="id", serialization_alias="product_id")
     shop_id: UUID
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+class ProductVariation(BaseModel):
+    inventory_id: int
+    color: Optional[ColorSchema] = None
+    size: Optional[SizeSchema] = None
+    amount: int
+    description: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+class ProductWithVariationsSchema(ProductSchema):
+    variations: List[ProductVariation] = []
     
     class Config:
         from_attributes = True

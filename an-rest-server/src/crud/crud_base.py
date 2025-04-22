@@ -1,7 +1,7 @@
 from typing import Type, TypeVar, Generic, Optional, List, Union, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
-from sqlalchemy.future import select
+# from sqlalchemy.future import select
 from models.base_model import BaseModel
 from uuid import UUID
 from core.logging import logger
