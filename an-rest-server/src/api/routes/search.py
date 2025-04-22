@@ -22,6 +22,67 @@ from schemas import (
 # Initialize router
 router = APIRouter(prefix="/search", tags=["search"])
 
+async def get_records_without_embeddings_count(db: AsyncSession) -> int:
+    """Get count of products without embeddings."""
+    from sqlalchemy import func, select
+    from models import Product
+    
+    query = select(func.count()).select_from(Product).filter(Product.embedding.is_(None))
+    result = await db.execute(query)
+    count = result.scalar_one()
+    
+    logger.info(f"{count} products without embeddings ...")
+    return count
+
+
+async def process_embeddings_batch(db: AsyncSession, batch_size: int):
+    """Background task to process a batch of embeddings"""
+    from api.search_modules import VectorSearchStrategy
+    
+    # Create new session for background task
+    async with db.begin():
+        try:
+            # Get products without embeddings
+            products = await crud_product_search.get_records_without_embeddings(db, batch_size)
+            
+            if not products:
+                logger.info("No products found without embeddings")
+                return
+                
+            # logger.info(f"Processing embeddings for {len(products)} products")
+            
+            # Create vector strategy for generating embeddings
+            vector_strategy = VectorSearchStrategy(crud_product_search.model)
+            
+            processed_count = 0
+            error_count = 0
+            
+            # Process each product
+            for product in products:
+                try:
+                    # Generate text for embedding
+                    text = await crud_product_search.generate_product_embedding_text(product)
+                    
+                    # Generate embedding
+                    embedding = await vector_strategy.generate_embedding(text)
+                    
+                    # Update product with embedding
+                    await crud_product_search.update_embedding(db, product.id, embedding)
+                    
+                    processed_count += 1
+                    logger.info(f"Updated embedding for product {product.id}")
+                    
+                except Exception as e:
+                    error_count += 1
+                    logger.error(f"Error generating embedding for product {product.id}: {e}")
+                    continue
+                    
+            logger.info(f"Completed embedding generation batch: {processed_count} processed, {error_count} errors")
+            
+        except Exception as e:
+            logger.error(f"Error in batch embedding process: {e}")
+            raise
+
 @router.get("/products", response_model=SearchResponse)
 async def search_products(
     q: str = Query(..., description="Search query"),
@@ -219,60 +280,5 @@ async def get_embedding_status(
     )
 
 
-async def get_records_without_embeddings_count(db: AsyncSession) -> int:
-    """Get count of products without embeddings."""
-    from sqlalchemy import func, select
-    from models import Product
-    
-    query = select(func.count()).select_from(Product).filter(Product.embedding.is_(None))
-    result = await db.execute(query)
-    return result.scalar_one()
 
 
-async def process_embeddings_batch(db: AsyncSession, batch_size: int):
-    """Background task to process a batch of embeddings"""
-    from .search_modules import VectorSearchStrategy
-    
-    # Create new session for background task
-    async with db.begin():
-        try:
-            # Get products without embeddings
-            products = await crud_product_search.get_records_without_embeddings(db, batch_size)
-            
-            if not products:
-                logger.info("No products found without embeddings")
-                return
-                
-            logger.info(f"Processing embeddings for {len(products)} products")
-            
-            # Create vector strategy for generating embeddings
-            vector_strategy = VectorSearchStrategy(crud_product_search.model)
-            
-            processed_count = 0
-            error_count = 0
-            
-            # Process each product
-            for product in products:
-                try:
-                    # Generate text for embedding
-                    text = await crud_product_search.generate_product_embedding_text(product)
-                    
-                    # Generate embedding
-                    embedding = await vector_strategy.generate_embedding(text)
-                    
-                    # Update product with embedding
-                    await crud_product_search.update_embedding(db, product.id, embedding)
-                    
-                    processed_count += 1
-                    logger.info(f"Updated embedding for product {product.id}")
-                    
-                except Exception as e:
-                    error_count += 1
-                    logger.error(f"Error generating embedding for product {product.id}: {e}")
-                    continue
-                    
-            logger.info(f"Completed embedding generation batch: {processed_count} processed, {error_count} errors")
-            
-        except Exception as e:
-            logger.error(f"Error in batch embedding process: {e}")
-            raise

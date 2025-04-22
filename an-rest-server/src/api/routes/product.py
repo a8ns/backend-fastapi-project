@@ -8,7 +8,8 @@ from crud.crud import crud_product
 from schemas import (
     ProductSchema,
     ProductCreateSchema,
-    ProductUpdateSchema
+    ProductUpdateSchema,
+    ProductWithVariationsSchema
 )
 
 router = APIRouter()
@@ -20,6 +21,27 @@ async def create_product(
 ):
     """Create a new product"""
     return await crud_product.create(db, obj_in=product_in)
+    
+
+@router.get("/with-variations", response_model=List[ProductWithVariationsSchema])
+async def get_all_products_with_variations(
+    skip: int = 0,
+    limit: int = 100,
+    shop_id: Optional[UUID] = None,
+    category_id: Optional[int] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all products with their variations"""
+    filters = {}
+    if shop_id:
+        filters["shop_id"] = shop_id
+    if category_id:
+        filters["category_id"] = category_id
+    
+    products = await crud_product.get_all_with_variations(
+        db, skip=skip, limit=limit, filters=filters
+    )
+    return products
 
 @router.get("/{product_id}", response_model=ProductSchema)
 async def get_product(
@@ -31,6 +53,19 @@ async def get_product(
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
     return db_product
+
+@router.get("/{product_id}/with-variations", response_model=ProductWithVariationsSchema)
+async def get_product_with_variations(
+    product_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get a product with all its variations"""
+    product = await crud_product.get_with_variations(db, product_id=product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product
+
+
 
 @router.get("/", response_model=List[ProductSchema])
 async def get_products(

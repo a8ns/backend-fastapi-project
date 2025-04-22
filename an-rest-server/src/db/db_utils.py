@@ -1,4 +1,4 @@
-import logging
+from core.logging import logger
 import json
 import asyncio
 from sqlalchemy import inspect, text
@@ -25,18 +25,18 @@ async def retry_async(func, max_retries=5, initial_delay=1, backoff_factor=2):
     
     for attempt in range(max_retries):
         try:
-            logging.info(f"Attempt {attempt+1}/{max_retries}")
+            logger.info(f"Attempt {attempt+1}/{max_retries}")
             return await func()
         except Exception as e:
             last_exception = e
-            logging.warning(f"Attempt {attempt+1} failed: {str(e)}")
+            logger.warning(f"Attempt {attempt+1} failed: {str(e)}")
             
             if attempt < max_retries - 1:
-                logging.info(f"Retrying in {delay} seconds...")
+                logger.info(f"Retrying in {delay} seconds...")
                 await asyncio.sleep(delay)
                 delay *= backoff_factor
             else:
-                logging.error(f"All {max_retries} attempts failed")
+                logger.error(f"All {max_retries} attempts failed")
                 raise last_exception
 
 async def install_extensions():
@@ -44,11 +44,11 @@ async def install_extensions():
     async with engine.begin() as conn:
         try:
             # Install pgvector extension
-            logging.info("Installing pgvector extension if not exists")
+            logger.info("Installing pgvector extension if not exists")
             await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            logging.info("Vector extension successfully installed")
+            logger.info("Vector extension successfully installed")
         except Exception as e:
-            logging.error(f"Error installing extensions: {str(e)}")
+            logger.error(f"Error installing extensions: {str(e)}")
             raise
 
 async def create_tables():
@@ -64,12 +64,12 @@ async def create_tables():
                 ]
                 
                 if missing_tables:
-                    logging.info(f"Creating missing tables: {missing_tables}")
+                    logger.info(f"Creating missing tables: {missing_tables}")
                     Base.metadata.create_all(bind=sync_conn, checkfirst=True)
                 else:
-                    logging.info("All tables already exist. No action taken.")
+                    logger.info("All tables already exist. No action taken.")
             except Exception as e:
-                logging.warning(f"Exception during table creation: {e}")
+                logger.warning(f"Exception during table creation: {e}")
                 raise  # We'll let the retry mechanism handle this
                 
         await conn.run_sync(create_if_needed)
@@ -83,13 +83,13 @@ async def init_db():
         # Then create tables
         await retry_async(create_tables)
         
-        logging.info("Database initialization successful")
+        logger.info("Database initialization successful")
     except Exception as e:
-        logging.error(f"Database initialization failed: {str(e)}")
+        logger.error(f"Database initialization failed: {str(e)}")
         # Decide whether to re-raise based on your application's needs
         raise
 
 
 async def close_db():
     await engine.dispose()
-    logging.info("Database connection closed.")
+    logger.info("Database connection closed.")

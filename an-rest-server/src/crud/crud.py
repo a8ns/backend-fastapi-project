@@ -1,10 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update, func
-from typing import Union, Dict, Any
+from sqlalchemy import select, update, delete, func
+from sqlalchemy.orm import selectinload
+from typing import Union, Dict, Any, Optional, List
+from uuid import UUID
 from .crud_base import CRUDBase
 from models import (Shop, Product, Category, Color, Size, Inventory)
 from schemas import (ShopCreateSchema, ShopUpdateSchema)
-from schemas import (ProductCreateSchema, ProductUpdateSchema)
+from schemas import (ProductCreateSchema, ProductUpdateSchema, ProductWithVariationsSchema)
 from schemas import (InventoryCreateSchema, InventoryUpdateSchema)
 from schemas import (CategoryCreateSchema, CategoryUpdateSchema)
 from schemas import (ColorCreateSchema, ColorUpdateSchema)
@@ -37,6 +39,73 @@ class CRUDProduct(CRUDBase[Product, ProductCreateSchema, ProductUpdateSchema]):
     async def update(self, db_session: AsyncSession, *, db_obj: Product, obj_in: Union[ProductUpdateSchema, Dict[str, Any]]) -> Product:
         db_obj = await super().update(db_session, db_obj=db_obj, obj_in=obj_in)
         return await self.update_search_vector(db_session, db_obj)
+    
+    async def get_with_variations(
+            self, 
+            db_session: AsyncSession, 
+            product_id: UUID
+        ) -> Optional[ProductWithVariationsSchema]:
+        """Get a product with all its variations (inventory items)"""
+        query = (
+            select(Product)
+            .options(
+                selectinload(Product.inventory_items).selectinload(Inventory.color),
+                selectinload(Product.inventory_items).selectinload(Inventory.size)
+            )
+            .filter(Product.id == product_id)
+        )
+        
+        result = await db_session.execute(query)
+        product = result.scalar_one_or_none()
+        
+        if not product:
+            return None
+        
+        # Map inventory items to variations
+        variations = [
+            {
+                "inventory_id": inventory.id,  # Explicit field name
+                "color": {
+                    "color_id": inventory.color.id,
+                    "name": inventory.color.name,
+                    "code": inventory.color.code
+                } if inventory.color else None,
+                "size": {
+                    "size_id": inventory.size.id,
+                    "name": inventory.size.name
+                } if inventory.size else None,
+                "amount": inventory.amount,
+                "description": inventory.description
+            }
+            for inventory in product.inventory_items
+        ]
+        
+        return ProductWithVariationsSchema.model_validate({
+            **product.__dict__,
+            "variations": variations
+        })
+    
+    async def get_all_with_variations(
+        self, 
+        db_session: AsyncSession, 
+        *, 
+        skip: int = 0, 
+        limit: int = 100,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> List[ProductWithVariationsSchema]:
+        """Get all products with their variations, reusing get_with_variations logic"""
+        # First get all products
+        products = await self.get_multi(db_session, skip=skip, limit=limit, filters=filters)
+        
+        # Then get variations for each product
+        products_with_variations = []
+        for product in products:
+            product_with_variations = await self.get_with_variations(db_session, product.id)
+            if product_with_variations:
+                products_with_variations.append(product_with_variations)
+        
+        return products_with_variations
+
 
 # -------------- INVENTORY CRUD -------------------- #
 class CRUDInventory(CRUDBase[Inventory, InventoryCreateSchema, InventoryUpdateSchema]):
