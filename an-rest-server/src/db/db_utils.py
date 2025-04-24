@@ -83,7 +83,6 @@ async def init_db():
         # Then create tables
         await retry_async(create_tables)
         
-        logger.info("Database initialization successful")
     except Exception as e:
         logger.error(f"Database initialization failed: {str(e)}")
         # Decide whether to re-raise based on your application's needs

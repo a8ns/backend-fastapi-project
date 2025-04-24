@@ -161,14 +161,14 @@ class TextSearchStrategy(SearchStrategy[ModelType, ResultSchemaType]):
         return self.result_type(**model_data)
 
 
-class VectorSearchStrategy(SearchStrategy[ModelType, ResultSchemaType]):
+class VectorSearchStrategy(SearchStrategy):
     """Vector-based semantic search using pgvector"""
     
     def __init__(
         self, 
-        model: ModelType, 
+        model, 
         embedding_field: str = 'embedding',
-        result_type: ResultSchemaType = None
+        result_type = None
     ):
         super().__init__(model)
         self.embedding_field = embedding_field
@@ -205,7 +205,7 @@ class VectorSearchStrategy(SearchStrategy[ModelType, ResultSchemaType]):
         range_filters: Optional[Dict[str, Dict[str, Any]]] = None,
         limit: int = 20,
         **kwargs
-    ) -> List[ResultSchemaType]:
+    ) -> List:
         """Execute vector search"""
         if not SearchConfig.VECTOR_SEARCH_ENABLED:
             logger.warning("Vector search requested but not enabled")
