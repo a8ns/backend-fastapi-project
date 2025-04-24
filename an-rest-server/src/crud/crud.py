@@ -39,7 +39,42 @@ class CRUDProduct(CRUDBase[Product, ProductCreateSchema, ProductUpdateSchema]):
     async def update(self, db_session: AsyncSession, *, db_obj: Product, obj_in: Union[ProductUpdateSchema, Dict[str, Any]]) -> Product:
         db_obj = await super().update(db_session, db_obj=db_obj, obj_in=obj_in)
         return await self.update_search_vector(db_session, db_obj)
+
+    async def get_products_by_shop(
+        self, 
+        db_session: AsyncSession, 
+        shop_id: UUID,
+        *, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[Product]:
+        """Get all products for a specific shop"""
+        
+        query = (
+            select(Product)
+            .filter(Product.shop_id == shop_id)
+            .offset(skip)
+            .limit(limit)
+        )
+        
+        result = await db_session.execute(query)
+        return result.scalars().all()
     
+    async def count_products_by_shop(
+        self,
+        db_session: AsyncSession,
+        shop_id: UUID
+    ) -> int:
+        """Count products for a specific shop"""
+        query = (
+            select(func.count())
+            .select_from(Product)
+            .filter(Product.shop_id == shop_id)
+        )
+        
+        result = await db_session.execute(query)
+        return result.scalar_one()
+
     async def get_with_variations(
             self, 
             db_session: AsyncSession, 

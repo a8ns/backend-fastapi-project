@@ -58,3 +58,11 @@ class ProductWithVariationsSchema(ProductSchema):
     
     class Config:
         from_attributes = True
+
+class ShopProductsSchema(BaseModel):
+    shop_id: UUID
+    total_products: int
+    products: List[ProductSchema]
+    
+    class Config:
+        from_attributes = True
