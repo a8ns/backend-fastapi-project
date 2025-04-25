@@ -1,4 +1,4 @@
-import logging
+from core.logging import logger 
 from fastapi import FastAPI, Depends, Security
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -8,7 +8,6 @@ from core.config import settings
 from db.db_utils import init_db, close_db
 from starlette.middleware.sessions import SessionMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from core.logging import logger 
 from fastapi.security import APIKeyHeader
 
 
@@ -21,7 +20,7 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing database...")
     await init_db()
     logger.info("Database initialized successfully")
-    
+
     yield
     
     # Shutdown: Close database connections
@@ -51,7 +50,7 @@ app.add_middleware(APIKeyMiddleware)
 # Set up CORS middleware
 
 origins = [origin.strip() for origin in settings.cors_origins.split(",")]
-logger.info(f"CORS Origins configured: ")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
