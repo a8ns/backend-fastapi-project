@@ -1,5 +1,7 @@
 from core.config import settings
 from core.logging import logger
+import asyncio
+from sqlalchemy.ext.asyncio import async_scoped_session
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils.functions import create_database, database_exists, drop_database
@@ -23,11 +25,17 @@ engine = create_async_engine(DATABASE_URL,
                                 pool_recycle=300
                             )
 
-AsyncSessionLocal = sessionmaker(bind=engine,
-                                    class_=AsyncSession,
-                                    expire_on_commit=False,
-                                    autoflush=False
-                                )
+# AsyncSessionLocal = sessionmaker(bind=engine,
+#                                     class_=AsyncSession,
+#                                     expire_on_commit=False,
+#                                     autoflush=False
+#                                 )
+async_session_factory = sessionmaker(bind=engine, 
+                                    expire_on_commit=False, 
+                                    class_=AsyncSession
+                                    )
+
+AsyncSessionLocal = async_scoped_session(async_session_factory, scopefunc=asyncio.current_task)
 
 async def init_test_db():
     """Initialize test database: Drop if exists and then create anew."""

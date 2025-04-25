@@ -23,6 +23,8 @@ async def retry_async(func, max_retries=5, initial_delay=1, backoff_factor=2):
     last_exception = None
     delay = initial_delay
     
+    logger.info(f"Using event loop: {type(asyncio.get_event_loop()).__module__}.{type(asyncio.get_event_loop()).__name__}")
+    
     for attempt in range(max_retries):
         try:
             logger.info(f"Attempt {attempt+1}/{max_retries}")
