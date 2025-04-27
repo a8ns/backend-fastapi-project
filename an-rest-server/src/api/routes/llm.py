@@ -42,6 +42,9 @@ async def extract_keywords_openai(
 - pattern: Any pattern specification (if mentioned)
 - gender: Any gender specification (if mentioned, e.g., "men's", "women's")
 - age_group: Any age group specification (if mentioned, e.g., "kids", "adult")
+- price: Any price specification (if mentioned)
+- location: Any location specification (if mentioned, e.g. "near me" or city or city area e.g. "Charlottenburg")
+- purpose: Any purpose specification (if mentioned, e.g. "gift")
 
 IMPORTANT:
 1. Return ONLY valid JSON without any explanations, comments, or additional text.
