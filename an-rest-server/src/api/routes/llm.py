@@ -53,6 +53,7 @@ IMPORTANT:
 3. Do not include null or empty values.
 4. Do not add quotes or formatting outside the JSON structure.
 5. Keep your response concise and focus on exactly what was mentioned.
+6. If you don't find a product name give me a name of product that is most probably meant by the user.
 
 Text to analyze: {user_input}"""
 
