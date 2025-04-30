@@ -6,7 +6,7 @@ from uuid import UUID
 from .crud_base import CRUDBase
 from models import (Shop, Product, Category, Color, Size, Inventory)
 from schemas import (ShopCreateSchema, ShopUpdateSchema)
-from schemas import (ProductCreateSchema, ProductUpdateSchema, ProductWithVariationsSchema)
+from schemas import (ProductCreateSchema, ProductUpdateSchema, ProductWithVariationsSchema, ProductWithShopNamesSchema, ProductsWithShopNamesResponseSchema)
 from schemas import (InventoryCreateSchema, InventoryUpdateSchema)
 from schemas import (CategoryCreateSchema, CategoryUpdateSchema)
 from schemas import (ColorCreateSchema, ColorUpdateSchema)
@@ -75,6 +75,98 @@ class CRUDProduct(CRUDBase[Product, ProductCreateSchema, ProductUpdateSchema]):
         result = await db_session.execute(query)
         return result.scalar_one()
 
+    async def get_products_by_category(
+        self, 
+        db_session: AsyncSession, 
+        category_id: int,
+        *, 
+        skip: int = 0, 
+        limit: int = 100
+    ) -> List[Product]:
+        """Get all products for a specific category"""
+        
+        query = (
+            select(Product)
+            .filter(Product.category_id == category_id)
+            .offset(skip)
+            .limit(limit)
+        )
+        
+        result = await db_session.execute(query)
+        return result.scalars().all()
+        
+    async def count_products_by_category(
+        self,
+        db_session: AsyncSession,
+        category_id: int
+    ) -> int:
+        """Count products for a specific category"""
+        query = (
+            select(func.count())
+            .select_from(Product)
+            .filter(Product.category_id == category_id)
+        )
+        
+        result = await db_session.execute(query)
+        return result.scalar_one()
+
+    async def get_products_by_category_with_shopnames(
+        self,
+        db_session: AsyncSession,
+        category_id: int,
+        *,
+        skip: int = 0,
+        limit: int = 100
+    ) -> ProductsWithShopNamesResponseSchema:
+        """
+        Get products for a specific category with their shop names included
+        Returns products with shop information joined in a structured response
+        """
+        # Create a query that joins Product with Shop
+        query = (
+            select(Product, Shop.name.label("shop_name"))
+            .join(Shop, Product.shop_id == Shop.id)
+            .filter(Product.category_id == category_id)
+        )
+        
+        # Get total count for pagination
+        count_query = query.with_only_columns(func.count())
+        count_result = await db_session.execute(count_query)
+        total = count_result.scalar_one()
+        
+        # Apply pagination
+        query = query.offset(skip).limit(limit)
+        
+        # Execute the query
+        result = await db_session.execute(query)
+        rows = result.all()
+        
+        # Process the results to include shop name with each product
+        products_with_shops = []
+        for row in rows:
+            product = row[0]
+            shop_name = row[1]
+            
+            # Create a dictionary with all product attributes and shop_name
+            product_dict = {
+                **product.__dict__,
+                "shop_name": shop_name
+            }
+            
+            # Remove SQLAlchemy special attributes
+            if "_sa_instance_state" in product_dict:
+                del product_dict["_sa_instance_state"]
+                
+            # Create a ProductWithShopNamesSchema instance
+            product_with_shop = ProductWithShopNamesSchema.model_validate(product_dict)
+            products_with_shops.append(product_with_shop)
+        
+        # Return a structured response with total count and items
+        return ProductsWithShopNamesResponseSchema(
+            total=total,
+            items=products_with_shops
+        )
+        
     async def get_with_variations(
             self, 
             db_session: AsyncSession, 
@@ -140,7 +232,68 @@ class CRUDProduct(CRUDBase[Product, ProductCreateSchema, ProductUpdateSchema]):
                 products_with_variations.append(product_with_variations)
         
         return products_with_variations
-
+    
+    async def get_multi_with_shopnames(
+        self,
+        db_session: AsyncSession,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        filters: Optional[Dict[str, Any]] = None
+    ) -> ProductsWithShopNamesResponseSchema:
+        """
+        Get multiple products with their shop names included
+        Returns products with shop information joined in a structured response
+        """
+        # Create a query that joins Product with Shop
+        query = (
+            select(Product, Shop.name.label("shop_name"))
+            .join(Shop, Product.shop_id == Shop.id)
+        )
+        
+        # Apply filters if provided
+        if filters:
+            for field, value in filters.items():
+                if hasattr(Product, field):
+                    query = query.filter(getattr(Product, field) == value)
+        
+        # Get total count for pagination
+        count_query = query.with_only_columns(func.count())
+        count_result = await db_session.execute(count_query)
+        total = count_result.scalar_one()
+        
+        # Apply pagination
+        query = query.offset(skip).limit(limit)
+        
+        # Execute the query
+        result = await db_session.execute(query)
+        rows = result.all()
+        
+        # Process the results to include shop name with each product
+        products_with_shops = []
+        for row in rows:
+            product = row[0]
+            shop_name = row[1]
+            
+            # Create a dictionary with all product attributes and shop_name
+            product_dict = {
+                **product.__dict__,
+                "shop_name": shop_name
+            }
+            
+            # Remove SQLAlchemy special attributes
+            if "_sa_instance_state" in product_dict:
+                del product_dict["_sa_instance_state"]
+                
+            # Create a ProductWithShopNamesSchema instance
+            product_with_shop = ProductWithShopNamesSchema.model_validate(product_dict)
+            products_with_shops.append(product_with_shop)
+            
+        # Return a structured response with total count and items
+        return ProductsWithShopNamesResponseSchema(
+            total=total,
+            items=products_with_shops
+        )
 
 # -------------- INVENTORY CRUD -------------------- #
 class CRUDInventory(CRUDBase[Inventory, InventoryCreateSchema, InventoryUpdateSchema]):

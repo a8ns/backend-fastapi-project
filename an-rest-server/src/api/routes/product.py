@@ -9,7 +9,8 @@ from schemas import (
     ProductSchema,
     ProductCreateSchema,
     ProductUpdateSchema,
-    ProductWithVariationsSchema
+    ProductWithVariationsSchema,
+    ProductsWithShopNamesResponseSchema
 )
 
 router = APIRouter()
@@ -39,6 +40,26 @@ async def get_all_products_with_variations(
         filters["category_id"] = category_id
     
     products = await crud_product.get_all_with_variations(
+        db, skip=skip, limit=limit, filters=filters
+    )
+    return products
+
+@router.get("/with-shopnames", response_model=ProductsWithShopNamesResponseSchema)
+async def get_all_products_with_shopnames(
+    skip: int = 0,
+    limit: int = 100,
+    shop_id: Optional[UUID] = None,
+    category_id: Optional[int] = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all products with their shop names"""
+    filters = {}
+    if shop_id:
+        filters["shop_id"] = shop_id
+    if category_id:
+        filters["category_id"] = category_id
+    
+    products = await crud_product.get_multi_with_shopnames(
         db, skip=skip, limit=limit, filters=filters
     )
     return products

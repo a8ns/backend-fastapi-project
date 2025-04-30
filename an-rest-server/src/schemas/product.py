@@ -42,6 +42,21 @@ class ProductSchema(ProductBase):
     
     class Config:
         from_attributes = True
+        
+class ProductWithShopNamesSchema(ProductSchema):
+    """Schema for product with shop name information"""
+    shop_name: str
+    
+    class Config:
+        from_attributes = True
+
+class ProductsWithShopNamesResponseSchema(BaseModel):
+    """Response schema for multiple products with shop names"""
+    total: int
+    items: List[ProductWithShopNamesSchema]
+    
+    class Config:
+        from_attributes = True
 
 class ProductVariation(BaseModel):
     inventory_id: int

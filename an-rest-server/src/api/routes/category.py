@@ -3,11 +3,12 @@ from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.session import get_db
-from crud.crud import crud_category
+from crud.crud import crud_category, crud_product
 from schemas import (
     CategorySchema,
     CategoryCreateSchema,
-    CategoryUpdateSchema
+    CategoryUpdateSchema,
+    ProductsWithShopNamesResponseSchema
 )
 
 router = APIRouter()
@@ -39,6 +40,20 @@ async def get_categories(
 ):
     """Get multiple categories with pagination"""
     return await crud_category.get_multi(db, skip=skip, limit=limit)
+
+@router.get("/{category_id}/products-with-shopnames", response_model=ProductsWithShopNamesResponseSchema)
+async def get_products_by_category_with_shopnames(
+    category_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all products for a specific category with their shop names"""
+    
+    products = await crud_product.get_products_by_category_with_shopnames(
+        db, category_id=category_id, skip=skip, limit=limit
+    )
+    return products
 
 @router.put("/{category_id}", response_model=CategorySchema)
 async def update_category(
