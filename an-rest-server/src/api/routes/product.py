@@ -23,6 +23,13 @@ async def create_product(
     """Create a new product"""
     return await crud_product.create(db, obj_in=product_in)
     
+@router.post("/bulk", response_model=List[ProductSchema])
+async def create_products_bulk(
+    products_in: List[ProductCreateSchema],
+    db: AsyncSession = Depends(get_db)
+):
+    """Create multiple products at once"""
+    return await crud_product.bulk_create(db, objs_in=products_in)    
 
 @router.get("/with-variations", response_model=List[ProductWithVariationsSchema])
 async def get_all_products_with_variations(
