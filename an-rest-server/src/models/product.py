@@ -38,16 +38,19 @@ class Product(BaseModel):
     
     # Basic product information
     title: Mapped[str] = mapped_column(String(256), nullable=False)
-    description: Mapped[str] = mapped_column(String(1024), nullable=True)
+    description: Mapped[str] = mapped_column(String(2048), nullable=True)
     price: Mapped[float] = mapped_column(Float, nullable=False)
     
     # Product details
     brand: Mapped[str] = mapped_column(String(256), nullable=True)
     article_number: Mapped[str] = mapped_column(String(256), nullable=True)
     barcode: Mapped[str] = mapped_column(String(256), nullable=True)
-    
+
+    in_store_validation: Mapped[bool] = mapped_column(Boolean, default=False)
+    original_offer_url: Mapped[str] = mapped_column(String(1024), nullable=True)
+
     # Media
-    image_url: Mapped[str] = mapped_column(String(512), nullable=True)
+    image_url: Mapped[str] = mapped_column(String(1024), nullable=True)
     additional_images: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     
     # Categorization

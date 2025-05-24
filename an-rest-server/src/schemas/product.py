@@ -12,6 +12,8 @@ class ProductBase(BaseModel):
     brand: Optional[str] = None
     article_number: Optional[str] = None
     barcode: Optional[str] = None
+    in_store_validation: bool = False
+    original_offer_url: Optional[str] = None
     image_url: Optional[str] = None
     additional_images: Optional[Dict[str, Any] | List[Any]] = None
     category_id: Optional[int] = None
@@ -29,6 +31,8 @@ class ProductUpdateSchema(BaseModel):
     brand: Optional[str] = None
     article_number: Optional[str] = None
     barcode: Optional[str] = None
+    in_store_validation: Optional[bool] = None    
+    original_offer_url: Optional[str] = None
     image_url: Optional[str] = None
     additional_images: Optional[Dict[str, Any] | List[Any]] = None
     category_id: Optional[int] = None
