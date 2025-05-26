@@ -38,7 +38,7 @@ class Product(BaseModel):
     
     # Basic product information
     title: Mapped[str] = mapped_column(String(256), nullable=False)
-    description: Mapped[str] = mapped_column(String(2048), nullable=True)
+    description: Mapped[str] = mapped_column(String(4096), nullable=True)
     price: Mapped[float] = mapped_column(Float, nullable=False)
     
     # Product details
